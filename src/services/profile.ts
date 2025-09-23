@@ -21,16 +21,19 @@ export const updateProfile = async (
   userId: string,
   updates: Partial<Profile>,
 ): Promise<Profile | null> => {
+  // Use upsert so that a profile row is created if it doesn't exist yet.
+  // Ensure 'id' is set for the upsert key.
+  const payload = { id: userId, ...updates }
   const { data, error } = await supabase
     .from('profiles')
-    .update(updates)
-    .eq('id', userId)
+    .upsert(payload, { onConflict: 'id' })
     .select()
 
   if (error) {
     console.error('Error updating profile:', error)
     throw error
   }
+  // upsert returns an array of rows
   return data?.[0] || null
 }
 
