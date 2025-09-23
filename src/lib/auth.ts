@@ -8,6 +8,24 @@ export type User = AuthUser & Profile
 export const useAuth = () => {
   const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
+  const loadingTimerRef = useRef<number | null>(null)
+
+  const setLoadingWithWatchdog = (value: boolean) => {
+    setLoading(value)
+    if (loadingTimerRef.current) {
+      window.clearTimeout(loadingTimerRef.current)
+      loadingTimerRef.current = null
+    }
+    if (value) {
+      // safety: ensure loading doesn't stay true forever
+      loadingTimerRef.current = window.setTimeout(() => {
+        // eslint-disable-next-line no-console
+        console.warn('Auth loading watchdog cleared loading state')
+        setLoading(false)
+        loadingTimerRef.current = null
+      }, 8000)
+    }
+  }
 
   const fetchUserProfile = useCallback(async (authUser: AuthUser) => {
     try {
