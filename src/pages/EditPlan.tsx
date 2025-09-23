@@ -44,6 +44,8 @@ export default function EditPlanPage() {
   const [date, setDate] = useState<DateRange | undefined>()
   const [sessionDuration, setSessionDuration] = useState('50')
   const [breakDuration, setBreakDuration] = useState('10')
+  const [customSessionDuration, setCustomSessionDuration] = useState('')
+  const [customBreakDuration, setCustomBreakDuration] = useState('')
   const [allSubjects, setAllSubjects] = useState<Subject[]>([])
   const [selectedSubjects, setSelectedSubjects] = useState<string[]>([])
   const [loading, setLoading] = useState(false)
