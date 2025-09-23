@@ -79,7 +79,7 @@ export const useAuth = () => {
 
       // Initial check
       try {
-        setLoading(true)
+        setLoadingWithWatchdog(true)
         const res = await supabase.auth.getSession()
         const session = (res as any)?.data?.session
         if (session?.user) {
@@ -89,7 +89,7 @@ export const useAuth = () => {
         // eslint-disable-next-line no-console
         console.error('checkSession error', err)
       } finally {
-        setLoading(false)
+        setLoadingWithWatchdog(false)
       }
     }
 
