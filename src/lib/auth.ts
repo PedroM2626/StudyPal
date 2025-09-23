@@ -100,9 +100,14 @@ export const useAuth = () => {
       try {
         setLoadingWithWatchdog(true)
         const res = await supabase.auth.getSession()
+        // eslint-disable-next-line no-console
+        console.debug('getSession initial check', res)
         const session = (res as any)?.data?.session
         if (session?.user) {
           await fetchUserProfile(session.user)
+        } else {
+          // eslint-disable-next-line no-console
+          console.debug('No session on initial check', session)
         }
       } catch (err) {
         // eslint-disable-next-line no-console
