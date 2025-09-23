@@ -102,13 +102,36 @@ export default function EditPlanPage() {
   }
 
   const handleUpdatePlan = async () => {
-    // Update logic would be implemented here
     setLoading(true)
-    setTimeout(() => {
+    try {
+      const resolvedSessionDuration =
+        sessionDuration === 'custom' && customSessionDuration
+          ? Number(customSessionDuration)
+          : Number(sessionDuration)
+      const resolvedBreakDuration =
+        breakDuration === 'custom' && customBreakDuration
+          ? Number(customBreakDuration)
+          : Number(breakDuration)
+
+      // Here we'd call an API to persist the changes. For now we update the plan row directly
+      await supabase
+        .from('study_plans')
+        .update({
+          title,
+          start_date: date?.from?.toISOString(),
+          end_date: date?.to?.toISOString(),
+          session_duration: resolvedSessionDuration,
+          break_duration: resolvedBreakDuration,
+        })
+        .eq('id', Number(id))
+
       toast({ title: 'Plano atualizado com sucesso!' })
       navigate(`/plan/${id}`)
+    } catch (err) {
+      toast({ variant: 'destructive', title: 'Erro ao salvar plano.' })
+    } finally {
       setLoading(false)
-    }, 1000)
+    }
   }
 
   const subjectOptions: Option[] = allSubjects.map((s) => ({
