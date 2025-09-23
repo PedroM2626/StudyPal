@@ -27,20 +27,26 @@ export const useAuth = () => {
     }
   }
 
+  const lastActiveSessionRef = useRef<{ session: any; ts: number } | null>(null)
+
   const fetchUserProfile = useCallback(async (authUser: AuthUser) => {
     try {
       const profile = await getProfile(authUser.id)
       if (profile) {
-        setUser({ ...authUser, ...profile })
+        const merged = { ...authUser, ...profile } as User
+        setUser(merged)
+        lastActiveSessionRef.current = { session: authUser, ts: Date.now() }
       } else {
         // This case might happen for a brand new user, handle appropriately
         setUser({ ...authUser } as User)
+        lastActiveSessionRef.current = { session: authUser, ts: Date.now() }
       }
     } catch (err) {
       // On error, ensure user is at least set from authUser to avoid blocking flow
       // eslint-disable-next-line no-console
       console.error('fetchUserProfile error', err)
       setUser({ ...authUser } as User)
+      lastActiveSessionRef.current = { session: authUser, ts: Date.now() }
     }
   }, [])
 
