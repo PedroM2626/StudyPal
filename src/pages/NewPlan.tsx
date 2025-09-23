@@ -88,13 +88,22 @@ export default function NewPlanPage() {
     }
     setLoading(true)
     try {
+      const resolvedSessionDuration =
+        sessionDuration === 'custom' && customSessionDuration
+          ? Number(customSessionDuration)
+          : Number(sessionDuration)
+      const resolvedBreakDuration =
+        breakDuration === 'custom' && customBreakDuration
+          ? Number(customBreakDuration)
+          : Number(breakDuration)
+
       const newPlan = await createPlan(user.id, {
         title,
         startDate: date.from,
         endDate: date.to,
         subjects: selectedSubjects.map(Number),
-        sessionDuration: Number(sessionDuration),
-        breakDuration: Number(breakDuration),
+        sessionDuration: resolvedSessionDuration,
+        breakDuration: resolvedBreakDuration,
       })
       toast({
         title: 'Plano gerado com sucesso!',
