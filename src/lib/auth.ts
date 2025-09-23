@@ -77,6 +77,28 @@ export const useAuth = () => {
 
     setup()
 
+    const handleVisibilityOrFocus = async () => {
+      try {
+        // Re-check session on tab focus/visibility to ensure auth state stays in sync
+        const res = await supabase.auth.getSession()
+        const session = (res as any)?.data?.session
+        if (session?.user) {
+          await fetchUserProfile(session.user)
+        } else {
+          setUser(null)
+        }
+      } catch (err) {
+        // eslint-disable-next-line no-console
+        console.error('visibility/focus check error', err)
+      } finally {
+        // ensure loading isn't left true
+        setLoading(false)
+      }
+    }
+
+    window.addEventListener('visibilitychange', handleVisibilityOrFocus)
+    window.addEventListener('focus', handleVisibilityOrFocus)
+
     return () => {
       try {
         if (subscriptionUnsubscribe) subscriptionUnsubscribe()
@@ -84,6 +106,8 @@ export const useAuth = () => {
         // eslint-disable-next-line no-console
         console.error('Failed to unsubscribe auth listener', err)
       }
+      window.removeEventListener('visibilitychange', handleVisibilityOrFocus)
+      window.removeEventListener('focus', handleVisibilityOrFocus)
     }
   }, [fetchUserProfile])
 
