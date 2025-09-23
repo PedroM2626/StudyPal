@@ -117,7 +117,14 @@ export const useAuth = () => {
         if (session?.user) {
           await fetchUserProfile(session.user)
         } else {
-          setUser(null)
+          const last = lastActiveSessionRef.current
+          const now = Date.now()
+          if (last && now - last.ts < 5000) {
+            // eslint-disable-next-line no-console
+            console.debug('Skipping transient sign-out (recent session)')
+          } else {
+            setUser(null)
+          }
         }
       } catch (err) {
         // eslint-disable-next-line no-console
