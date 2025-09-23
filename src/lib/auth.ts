@@ -51,7 +51,7 @@ export const useAuth = () => {
       try {
         const onAuth = supabase.auth.onAuthStateChange(async (event, session) => {
           try {
-            setLoading(true)
+            setLoadingWithWatchdog(true)
             if (session?.user) {
               await fetchUserProfile(session.user)
             } else {
@@ -61,7 +61,7 @@ export const useAuth = () => {
             // eslint-disable-next-line no-console
             console.error('onAuthStateChange handler error', err)
           } finally {
-            setLoading(false)
+            setLoadingWithWatchdog(false)
           }
         })
 
