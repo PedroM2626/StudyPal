@@ -11,7 +11,15 @@ export const getProfile = async (userId: string): Promise<Profile | null> => {
     .single()
 
   if (error) {
-    console.error('Error fetching profile:', error)
+    // Better logging for objects returned by Supabase
+    try {
+      const serialized = JSON.stringify(error, Object.getOwnPropertyNames(error))
+      // eslint-disable-next-line no-console
+      console.error('Error fetching profile:', serialized)
+    } catch (err) {
+      // eslint-disable-next-line no-console
+      console.error('Error fetching profile:', error)
+    }
     return null
   }
   return data
