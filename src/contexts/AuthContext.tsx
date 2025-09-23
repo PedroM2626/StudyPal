@@ -40,9 +40,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 }
 
 export const useAuthContext = () => {
+  // Always call useAuth to preserve hooks order. If an AuthProvider is present
+  // in the tree, prefer its context value; otherwise fall back to a local
+  // useAuth instance so components still work (useful during previews/tests).
+  const fallback = useAuth()
   const context = useContext(AuthContext)
-  if (context === undefined) {
-    throw new Error('useAuthContext must be used within an AuthProvider')
-  }
-  return context
+  return (context ?? fallback) as AuthContextType
 }
