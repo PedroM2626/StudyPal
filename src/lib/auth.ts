@@ -110,7 +110,7 @@ export const useAuth = () => {
         console.error('visibility/focus check error', err)
       } finally {
         // ensure loading isn't left true
-        setLoading(false)
+        setLoadingWithWatchdog(false)
       }
     }
 
