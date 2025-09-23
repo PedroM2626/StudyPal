@@ -129,14 +129,25 @@ export const useAuth = () => {
     }
   }, [fetchUserProfile])
 
-  const login = (email: string, password?: string) => {
+  const login = async (email: string, password?: string) => {
     if (!password) throw new Error('Password is required for login.')
-    return supabase.auth.signInWithPassword({ email, password })
+    const res = await supabase.auth.signInWithPassword({ email, password })
+    if (res.error) throw res.error
+    const session = (res as any)?.data?.session
+    if (session?.user) {
+      try {
+        await fetchUserProfile(session.user)
+      } catch (err) {
+        // eslint-disable-next-line no-console
+        console.error('Error fetching profile after login', err)
+      }
+    }
+    return res
   }
 
-  const signup = (email: string, password?: string) => {
+  const signup = async (email: string, password?: string) => {
     if (!password) throw new Error('Password is required for signup.')
-    return supabase.auth.signUp({
+    const res = await supabase.auth.signUp({
       email,
       password,
       options: {
@@ -145,6 +156,19 @@ export const useAuth = () => {
         },
       },
     })
+    if (res.error) throw res.error
+    const user = (res as any)?.data?.user
+    if (user) {
+      try {
+        // create an initial profile row
+        await updateProfile(user.id, { display_name: user.user_metadata?.display_name || '' })
+        await fetchUserProfile(user)
+      } catch (err) {
+        // eslint-disable-next-line no-console
+        console.error('Error during signup profile creation', err)
+      }
+    }
+    return res
   }
 
   const logout = () => supabase.auth.signOut()
