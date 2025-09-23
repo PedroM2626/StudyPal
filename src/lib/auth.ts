@@ -123,6 +123,8 @@ export const useAuth = () => {
       try {
         // Re-check session on tab focus/visibility to ensure auth state stays in sync
         const res = await supabase.auth.getSession()
+        // eslint-disable-next-line no-console
+        console.debug('getSession visibility/focus check', res)
         const session = (res as any)?.data?.session
         if (session?.user) {
           await fetchUserProfile(session.user)
