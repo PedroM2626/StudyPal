@@ -57,6 +57,9 @@ export const useAuth = () => {
       try {
         const onAuth = supabase.auth.onAuthStateChange(async (event, session) => {
           try {
+            // debug: log auth event and session
+            // eslint-disable-next-line no-console
+            console.debug('onAuth event', event, session)
             setLoadingWithWatchdog(true)
             if (session?.user) {
               await fetchUserProfile(session.user)
@@ -68,6 +71,8 @@ export const useAuth = () => {
                 // eslint-disable-next-line no-console
                 console.debug('Skipping transient sign-out (recent session)')
               } else {
+                // eslint-disable-next-line no-console
+                console.debug('Clearing user due to missing session')
                 setUser(null)
               }
             }
