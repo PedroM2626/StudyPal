@@ -52,7 +52,10 @@ export default function OnboardingPage() {
         title: 'Configuração concluída!',
         description: 'Bem-vindo(a) ao seu dashboard.',
       })
-      navigate('/')
+      // Aguarda um pequeno momento para garantir que o estado foi atualizado
+      setTimeout(() => {
+        navigate('/', { replace: true })
+      }, 100)
     } catch (error: any) {
       toast({
         variant: 'destructive',

@@ -71,10 +71,13 @@ export const useAuth = () => {
     if (!user) throw new Error('User not authenticated')
     const updatedProfileData = await updateProfile(user.id, updates)
     if (updatedProfileData) {
-      setUser((prevUser) => {
-        if (!prevUser) return null
-        return { ...prevUser, ...updatedProfileData }
-      })
+      // Atualiza o estado imediatamente com os novos dados
+      const updatedUser = { ...user, ...updatedProfileData }
+      setUser(updatedUser)
+      // Força uma atualização adicional para garantir que o estado seja refletido
+      setTimeout(() => {
+        setUser({ ...updatedUser })
+      }, 0)
     }
   }
 

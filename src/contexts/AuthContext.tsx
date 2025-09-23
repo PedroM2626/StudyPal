@@ -1,4 +1,4 @@
-import { createContext, useContext, ReactNode } from 'react'
+import { createContext, useContext, ReactNode, useCallback } from 'react'
 import { useAuth, User } from '@/lib/auth'
 import { supabase } from '@/lib/supabase/client'
 
@@ -22,10 +22,10 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined)
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const auth = useAuth()
 
-  const handleUpdateProfile = async (updates: Partial<User>) => {
+  const handleUpdateProfile = useCallback(async (updates: Partial<User>) => {
     if (!auth.user) return
     await auth.updateUserProfile(updates)
-  }
+  }, [auth.user, auth.updateUserProfile])
 
   const value = {
     ...auth,

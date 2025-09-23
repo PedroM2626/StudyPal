@@ -1,9 +1,9 @@
 import { supabase } from '@/lib/supabase/client'
-import { Tables } from '@/lib/supabase/types'
+import { Tables } from './db'
 
 export type StudySession = Tables<'study_sessions'> & {
-  subject_name: string
-  subject_color: string
+  subject: string
+  planTitle: string
 }
 
 export const getSessionsForPlan = async (

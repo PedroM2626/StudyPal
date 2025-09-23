@@ -23,6 +23,7 @@ export const ProtectedRoute = () => {
     return <Navigate to="/auth" replace />
   }
 
+  // Verifica se o perfil está completo
   if (!user.profile_complete) {
     return <Navigate to="/onboarding" replace />
   }
