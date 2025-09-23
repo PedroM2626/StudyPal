@@ -55,39 +55,45 @@ export const useAuth = () => {
 
     const setup = async () => {
       try {
-        const onAuth = supabase.auth.onAuthStateChange(async (event, session) => {
-          try {
-            // debug: log auth event and session
-            // eslint-disable-next-line no-console
-            console.debug('onAuth event', event, session)
-            setLoadingWithWatchdog(true)
-            if (session?.user) {
-              await fetchUserProfile(session.user)
-            } else {
-              const last = lastActiveSessionRef.current
-              const now = Date.now()
-              if (last && now - last.ts < 5000) {
-                // keep existing user during brief token refreshes
-                // eslint-disable-next-line no-console
-                console.debug('Skipping transient sign-out (recent session)')
+        const onAuth = supabase.auth.onAuthStateChange(
+          async (event, session) => {
+            try {
+              // debug: log auth event and session
+              // eslint-disable-next-line no-console
+              console.debug('onAuth event', event, session)
+              setLoadingWithWatchdog(true)
+              if (session?.user) {
+                await fetchUserProfile(session.user)
               } else {
-                // eslint-disable-next-line no-console
-                console.debug('Clearing user due to missing session')
-                setUser(null)
+                const last = lastActiveSessionRef.current
+                const now = Date.now()
+                if (last && now - last.ts < 5000) {
+                  // keep existing user during brief token refreshes
+                  // eslint-disable-next-line no-console
+                  console.debug('Skipping transient sign-out (recent session)')
+                } else {
+                  // eslint-disable-next-line no-console
+                  console.debug('Clearing user due to missing session')
+                  setUser(null)
+                }
               }
+            } catch (err) {
+              // eslint-disable-next-line no-console
+              console.error('onAuthStateChange handler error', err)
+            } finally {
+              setLoadingWithWatchdog(false)
             }
-          } catch (err) {
-            // eslint-disable-next-line no-console
-            console.error('onAuthStateChange handler error', err)
-          } finally {
-            setLoadingWithWatchdog(false)
-          }
-        })
+          },
+        )
 
         // onAuth may return an object with data.subscription
         if (onAuth && (onAuth as any).data?.subscription) {
-          subscriptionUnsubscribe = () => (onAuth as any).data.subscription.unsubscribe()
-        } else if (onAuth && typeof (onAuth as any).unsubscribe === 'function') {
+          subscriptionUnsubscribe = () =>
+            (onAuth as any).data.subscription.unsubscribe()
+        } else if (
+          onAuth &&
+          typeof (onAuth as any).unsubscribe === 'function'
+        ) {
           // older shape
           subscriptionUnsubscribe = () => (onAuth as any).unsubscribe()
         }
@@ -194,7 +200,9 @@ export const useAuth = () => {
     if (user) {
       try {
         // create an initial profile row
-        await updateProfile(user.id, { display_name: user.user_metadata?.display_name || '' })
+        await updateProfile(user.id, {
+          display_name: user.user_metadata?.display_name || '',
+        })
         await fetchUserProfile(user)
       } catch (err) {
         // eslint-disable-next-line no-console

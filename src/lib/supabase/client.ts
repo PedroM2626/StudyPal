@@ -3,9 +3,8 @@ import { createClient, SupabaseClient } from '@supabase/supabase-js'
 import type { Database } from './types'
 
 const SUPABASE_URL = (import.meta.env.VITE_SUPABASE_URL as string) || undefined
-const SUPABASE_PUBLISHABLE_KEY = (
-  import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY as string
-) || undefined
+const SUPABASE_PUBLISHABLE_KEY =
+  (import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY as string) || undefined
 
 function missingEnvError(): Error {
   const msg =
@@ -19,13 +18,17 @@ function missingEnvError(): Error {
 let supabaseClient: SupabaseClient<Database> | null = null
 
 if (SUPABASE_URL && SUPABASE_PUBLISHABLE_KEY) {
-  supabaseClient = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
-    auth: {
-      storage: localStorage,
-      persistSession: true,
-      autoRefreshToken: true,
+  supabaseClient = createClient<Database>(
+    SUPABASE_URL,
+    SUPABASE_PUBLISHABLE_KEY,
+    {
+      auth: {
+        storage: localStorage,
+        persistSession: true,
+        autoRefreshToken: true,
+      },
     },
-  })
+  )
 } else {
   // Provide a no-op supabase client so the app can run without crashing
   // when Supabase env vars are not configured. Each method logs a warning
@@ -113,7 +116,10 @@ if (SUPABASE_URL && SUPABASE_PUBLISHABLE_KEY) {
     auth: noopAuth,
     storage: noopStorage,
     functions: {
-      invoke: async (_name: string, _opts?: any) => ({ data: null, error: null }),
+      invoke: async (_name: string, _opts?: any) => ({
+        data: null,
+        error: null,
+      }),
     },
   }
 

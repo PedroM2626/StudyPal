@@ -22,10 +22,13 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined)
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const auth = useAuth()
 
-  const handleUpdateProfile = useCallback(async (updates: Partial<User>) => {
-    if (!auth.user) return
-    await auth.updateUserProfile(updates)
-  }, [auth.user, auth.updateUserProfile])
+  const handleUpdateProfile = useCallback(
+    async (updates: Partial<User>) => {
+      if (!auth.user) return
+      await auth.updateUserProfile(updates)
+    },
+    [auth.user, auth.updateUserProfile],
+  )
 
   const value = {
     ...auth,
