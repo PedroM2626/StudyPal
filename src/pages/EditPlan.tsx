@@ -206,8 +206,16 @@ export default function EditPlanPage() {
                   <SelectItem value="45">45 minutos</SelectItem>
                   <SelectItem value="50">50 minutos</SelectItem>
                   <SelectItem value="60">60 minutos</SelectItem>
+                  <SelectItem value="custom">Personalizado...</SelectItem>
                 </SelectContent>
               </Select>
+              {sessionDuration === 'custom' && (
+                <Input
+                  placeholder="Minutos (ex: 40)"
+                  value={customSessionDuration}
+                  onChange={(e) => setCustomSessionDuration(e.target.value)}
+                />
+              )}
             </div>
             <div className="space-y-2">
               <Label htmlFor="break-duration">Pausa Entre Sessões (min)</Label>
