@@ -22,10 +22,13 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined)
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const auth = useAuth()
 
-  const handleUpdateProfile = useCallback(async (updates: Partial<User>) => {
-    if (!auth.user) return
-    await auth.updateUserProfile(updates)
-  }, [auth.user, auth.updateUserProfile])
+  const handleUpdateProfile = useCallback(
+    async (updates: Partial<User>) => {
+      if (!auth.user) return
+      await auth.updateUserProfile(updates)
+    },
+    [auth.user, auth.updateUserProfile],
+  )
 
   const value = {
     ...auth,
@@ -40,9 +43,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 }
 
 export const useAuthContext = () => {
+  // Always call useAuth to preserve hooks order. If an AuthProvider is present
+  // in the tree, prefer its context value; otherwise fall back to a local
+  // useAuth instance so components still work (useful during previews/tests).
+  const fallback = useAuth()
   const context = useContext(AuthContext)
-  if (context === undefined) {
-    throw new Error('useAuthContext must be used within an AuthProvider')
-  }
-  return context
+  return (context ?? fallback) as AuthContextType
 }

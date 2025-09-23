@@ -44,6 +44,8 @@ export default function EditPlanPage() {
   const [date, setDate] = useState<DateRange | undefined>()
   const [sessionDuration, setSessionDuration] = useState('50')
   const [breakDuration, setBreakDuration] = useState('10')
+  const [customSessionDuration, setCustomSessionDuration] = useState('')
+  const [customBreakDuration, setCustomBreakDuration] = useState('')
   const [allSubjects, setAllSubjects] = useState<Subject[]>([])
   const [selectedSubjects, setSelectedSubjects] = useState<string[]>([])
   const [loading, setLoading] = useState(false)
@@ -100,13 +102,36 @@ export default function EditPlanPage() {
   }
 
   const handleUpdatePlan = async () => {
-    // Update logic would be implemented here
     setLoading(true)
-    setTimeout(() => {
+    try {
+      const resolvedSessionDuration =
+        sessionDuration === 'custom' && customSessionDuration
+          ? Number(customSessionDuration)
+          : Number(sessionDuration)
+      const resolvedBreakDuration =
+        breakDuration === 'custom' && customBreakDuration
+          ? Number(customBreakDuration)
+          : Number(breakDuration)
+
+      // Here we'd call an API to persist the changes. For now we update the plan row directly
+      await supabase
+        .from('study_plans')
+        .update({
+          title,
+          start_date: date?.from?.toISOString(),
+          end_date: date?.to?.toISOString(),
+          session_duration: resolvedSessionDuration,
+          break_duration: resolvedBreakDuration,
+        })
+        .eq('id', Number(id))
+
       toast({ title: 'Plano atualizado com sucesso!' })
       navigate(`/plan/${id}`)
+    } catch (err) {
+      toast({ variant: 'destructive', title: 'Erro ao salvar plano.' })
+    } finally {
       setLoading(false)
-    }, 1000)
+    }
   }
 
   const subjectOptions: Option[] = allSubjects.map((s) => ({
@@ -204,8 +229,16 @@ export default function EditPlanPage() {
                   <SelectItem value="45">45 minutos</SelectItem>
                   <SelectItem value="50">50 minutos</SelectItem>
                   <SelectItem value="60">60 minutos</SelectItem>
+                  <SelectItem value="custom">Personalizado...</SelectItem>
                 </SelectContent>
               </Select>
+              {sessionDuration === 'custom' && (
+                <Input
+                  placeholder="Minutos (ex: 40)"
+                  value={customSessionDuration}
+                  onChange={(e) => setCustomSessionDuration(e.target.value)}
+                />
+              )}
             </div>
             <div className="space-y-2">
               <Label htmlFor="break-duration">Pausa Entre Sessões (min)</Label>
@@ -217,8 +250,16 @@ export default function EditPlanPage() {
                   <SelectItem value="5">5 minutos</SelectItem>
                   <SelectItem value="10">10 minutos</SelectItem>
                   <SelectItem value="15">15 minutos</SelectItem>
+                  <SelectItem value="custom">Personalizado...</SelectItem>
                 </SelectContent>
               </Select>
+              {breakDuration === 'custom' && (
+                <Input
+                  placeholder="Minutos (ex: 7)"
+                  value={customBreakDuration}
+                  onChange={(e) => setCustomBreakDuration(e.target.value)}
+                />
+              )}
             </div>
           </div>
           <div className="space-y-2">
