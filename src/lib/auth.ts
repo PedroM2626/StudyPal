@@ -10,41 +10,81 @@ export const useAuth = () => {
   const [loading, setLoading] = useState(true)
 
   const fetchUserProfile = useCallback(async (authUser: AuthUser) => {
-    const profile = await getProfile(authUser.id)
-    if (profile) {
-      setUser({ ...authUser, ...profile })
-    } else {
-      // This case might happen for a brand new user, handle appropriately
+    try {
+      const profile = await getProfile(authUser.id)
+      if (profile) {
+        setUser({ ...authUser, ...profile })
+      } else {
+        // This case might happen for a brand new user, handle appropriately
+        setUser({ ...authUser } as User)
+      }
+    } catch (err) {
+      // On error, ensure user is at least set from authUser to avoid blocking flow
+      // eslint-disable-next-line no-console
+      console.error('fetchUserProfile error', err)
       setUser({ ...authUser } as User)
     }
   }, [])
 
   useEffect(() => {
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (event, session) => {
-      setLoading(true)
-      if (session?.user) {
-        await fetchUserProfile(session.user)
-      } else {
-        setUser(null)
-      }
-      setLoading(false)
-    })
+    let subscriptionUnsubscribe: (() => void) | null = null
 
-    // Initial check
-    const checkSession = async () => {
-      const {
-        data: { session },
-      } = await supabase.auth.getSession()
-      if (session?.user) {
-        await fetchUserProfile(session.user)
+    const setup = async () => {
+      try {
+        const onAuth = supabase.auth.onAuthStateChange(async (event, session) => {
+          try {
+            setLoading(true)
+            if (session?.user) {
+              await fetchUserProfile(session.user)
+            } else {
+              setUser(null)
+            }
+          } catch (err) {
+            // eslint-disable-next-line no-console
+            console.error('onAuthStateChange handler error', err)
+          } finally {
+            setLoading(false)
+          }
+        })
+
+        // onAuth may return an object with data.subscription
+        if (onAuth && (onAuth as any).data?.subscription) {
+          subscriptionUnsubscribe = () => (onAuth as any).data.subscription.unsubscribe()
+        } else if (onAuth && typeof (onAuth as any).unsubscribe === 'function') {
+          // older shape
+          subscriptionUnsubscribe = () => (onAuth as any).unsubscribe()
+        }
+      } catch (err) {
+        // eslint-disable-next-line no-console
+        console.error('Failed to initialize auth subscription', err)
       }
-      setLoading(false)
+
+      // Initial check
+      try {
+        setLoading(true)
+        const res = await supabase.auth.getSession()
+        const session = (res as any)?.data?.session
+        if (session?.user) {
+          await fetchUserProfile(session.user)
+        }
+      } catch (err) {
+        // eslint-disable-next-line no-console
+        console.error('checkSession error', err)
+      } finally {
+        setLoading(false)
+      }
     }
-    checkSession()
 
-    return () => subscription.unsubscribe()
+    setup()
+
+    return () => {
+      try {
+        if (subscriptionUnsubscribe) subscriptionUnsubscribe()
+      } catch (err) {
+        // eslint-disable-next-line no-console
+        console.error('Failed to unsubscribe auth listener', err)
+      }
+    }
   }, [fetchUserProfile])
 
   const login = (email: string, password?: string) => {
