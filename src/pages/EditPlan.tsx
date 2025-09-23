@@ -227,8 +227,16 @@ export default function EditPlanPage() {
                   <SelectItem value="5">5 minutos</SelectItem>
                   <SelectItem value="10">10 minutos</SelectItem>
                   <SelectItem value="15">15 minutos</SelectItem>
+                  <SelectItem value="custom">Personalizado...</SelectItem>
                 </SelectContent>
               </Select>
+              {breakDuration === 'custom' && (
+                <Input
+                  placeholder="Minutos (ex: 7)"
+                  value={customBreakDuration}
+                  onChange={(e) => setCustomBreakDuration(e.target.value)}
+                />
+              )}
             </div>
           </div>
           <div className="space-y-2">
