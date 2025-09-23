@@ -59,15 +59,50 @@ if (SUPABASE_URL && SUPABASE_PUBLISHABLE_KEY) {
     }),
   }
 
+  const authSubscribers: Array<(event: string, session: any) => void> = []
+  let currentSession: any = null
+
   const noopAuth = {
-    onAuthStateChange: (_cb: any) => {
-      const subscription = { unsubscribe: () => {} }
+    onAuthStateChange: (cb: (event: string, session: any) => void) => {
+      authSubscribers.push(cb)
+      const subscription = {
+        unsubscribe: () => {
+          const idx = authSubscribers.indexOf(cb)
+          if (idx !== -1) authSubscribers.splice(idx, 1)
+        },
+      }
       return { data: { subscription } }
     },
-    getSession: async () => ({ data: { session: null } }),
-    signInWithPassword: async (_creds: any) => ({ data: null, error: null }),
-    signUp: async (_data: any) => ({ data: null, error: null }),
-    signOut: async () => ({ error: null }),
+    getSession: async () => ({ data: { session: currentSession } }),
+    signInWithPassword: async (creds: any) => {
+      // create a fake user session for dev when Supabase isn't configured
+      currentSession = {
+        user: {
+          id: 'dev-user',
+          email: creds.email || 'dev@localhost',
+          user_metadata: { display_name: (creds.email || 'dev').split('@')[0] },
+        },
+      }
+      // notify subscribers
+      authSubscribers.forEach((cb) => cb('SIGNED_IN', currentSession))
+      return { data: { session: currentSession }, error: null }
+    },
+    signUp: async (data: any) => {
+      currentSession = {
+        user: {
+          id: 'dev-user',
+          email: data.email || 'dev@localhost',
+          user_metadata: { display_name: (data.email || 'dev').split('@')[0] },
+        },
+      }
+      authSubscribers.forEach((cb) => cb('SIGNED_UP', currentSession))
+      return { data: { user: currentSession.user }, error: null }
+    },
+    signOut: async () => {
+      currentSession = null
+      authSubscribers.forEach((cb) => cb('SIGNED_OUT', null))
+      return { error: null }
+    },
     // legacy
     user: null,
   }
