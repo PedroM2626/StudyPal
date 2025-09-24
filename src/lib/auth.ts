@@ -139,13 +139,25 @@ export const useAuth = () => {
 
     const handleVisibilityOrFocus = async () => {
       try {
+        // If offline, skip the network check
+        if (!navigator.onLine) {
+          // eslint-disable-next-line no-console
+          console.debug('Visibility/focus check skipped while offline')
+          return
+        }
         // Re-check session on tab focus/visibility to ensure auth state stays in sync
         const res = await supabase.auth.getSession()
         // eslint-disable-next-line no-console
         console.debug('getSession visibility/focus check', res)
         const session = (res as any)?.data?.session
         if (session?.user) {
-          await fetchUserProfile(session.user)
+          try {
+            await fetchUserProfile(session.user)
+          } catch (err) {
+            // eslint-disable-next-line no-console
+            console.warn('Visibility/focus profile fetch failed, using auth user fallback', err)
+            setUser({ ...session.user } as User)
+          }
         } else {
           const last = lastActiveSessionRef.current
           const now = Date.now()
