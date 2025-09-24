@@ -123,7 +123,17 @@ export const useAuth = () => {
       }
     }
 
-    setup()
+    (async () => {
+      try {
+        await setup()
+      } catch (err) {
+        // eslint-disable-next-line no-console
+        console.error('Error during auth setup', err)
+      } finally {
+        // ensure loading is not stuck
+        setLoadingWithWatchdog(false)
+      }
+    })()
 
     const handleVisibilityOrFocus = async () => {
       try {
