@@ -59,25 +59,23 @@ export const useNotifications = () => {
     [],
   )
 
-  const cancelNotification = useCallback(
-    (sessionId: number) => {
-      const notification = scheduledNotifications.find(
-        (n) => n.sessionId === sessionId,
-      )
+  const cancelNotification = useCallback((sessionId: number) => {
+    setScheduledNotifications((prev) => {
+      const notification = prev.find((n) => n.sessionId === sessionId)
       if (notification) {
         clearTimeout(notification.timeoutId)
-        setScheduledNotifications((prev) =>
-          prev.filter((n) => n.sessionId !== sessionId),
-        )
+        return prev.filter((n) => n.sessionId !== sessionId)
       }
-    },
-    [scheduledNotifications],
-  )
+      return prev
+    })
+  }, [])
 
   const cancelAllNotifications = useCallback(() => {
-    scheduledNotifications.forEach((n) => clearTimeout(n.timeoutId))
-    setScheduledNotifications([])
-  }, [scheduledNotifications])
+    setScheduledNotifications((prev) => {
+      prev.forEach((n) => clearTimeout(n.timeoutId))
+      return []
+    })
+  }, [])
 
   return {
     permission,
