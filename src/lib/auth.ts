@@ -7,8 +7,9 @@ export type User = AuthUser & Profile
 
 export const useAuth = () => {
   const [user, setUser] = useState<User | null>(null)
-  // Loading state removed because it caused issues when switching tabs.
-  const loading = false
+  // Keep a loading flag while we determine the initial auth state to avoid
+  // redirecting to the login page prematurely during startup/refresh.
+  const [loading, setLoading] = useState<boolean>(true)
 
   const lastActiveSessionRef = useRef<{ session: any; ts: number } | null>(null)
 
