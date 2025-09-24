@@ -44,8 +44,19 @@ export const useAuth = () => {
               // debug: log auth event and session
               // eslint-disable-next-line no-console
               console.debug('onAuth event', event, session)
-              if (session?.user) {
-                await fetchUserProfile(session.user)
+              if (!navigator.onLine) {
+                // If offline, avoid network calls; keep current user if any.
+                // eslint-disable-next-line no-console
+                console.debug('Offline - skipping auth network checks')
+              } else if (session?.user) {
+                try {
+                  await fetchUserProfile(session.user)
+                } catch (err) {
+                  // If fetching profile fails, fall back to auth user to avoid blocking.
+                  // eslint-disable-next-line no-console
+                  console.warn('Failed to fetch profile from auth event, using auth user fallback', err)
+                  setUser({ ...session.user } as User)
+                }
               } else {
                 const last = lastActiveSessionRef.current
                 const now = Date.now()
