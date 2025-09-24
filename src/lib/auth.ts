@@ -1,5 +1,4 @@
 import { useState, useRef, useCallback, useEffect } from 'react'
-import { useState, useRef, useCallback, useEffect } from 'react'
 import { supabase } from '@/lib/supabase/client'
 import { getProfile, updateProfile, Profile } from '@/services/profile'
 import { AuthUser } from '@supabase/supabase-js'
