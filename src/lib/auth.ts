@@ -191,48 +191,80 @@ export const useAuth = () => {
     }
   }, [fetchUserProfile])
 
+  // Helper to add a timeout to network calls
+  const withTimeout = async <T,>(p: Promise<T>, ms = 10000): Promise<T> => {
+    let timeoutId: number | undefined
+    const timeout = new Promise<never>((_, reject) => {
+      timeoutId = window.setTimeout(() => reject(new Error('Request timed out')), ms)
+    })
+    try {
+      return await Promise.race([p, timeout]) as T
+    } finally {
+      if (timeoutId) window.clearTimeout(timeoutId)
+    }
+  }
+
   const login = async (email: string, password?: string) => {
     if (!password) throw new Error('Password is required for login.')
-    const res = await supabase.auth.signInWithPassword({ email, password })
-    if (res.error) throw res.error
-    const session = (res as any)?.data?.session
-    if (session?.user) {
-      try {
-        await fetchUserProfile(session.user)
-      } catch (err) {
-        // eslint-disable-next-line no-console
-        console.error('Error fetching profile after login', err)
+    if (!navigator.onLine) throw new Error('Sem conexão de rede')
+    try {
+      const res = await withTimeout(
+        supabase.auth.signInWithPassword({ email, password }),
+      )
+      if ((res as any).error) throw (res as any).error
+      const session = (res as any)?.data?.session
+      if (session?.user) {
+        try {
+          await fetchUserProfile(session.user)
+        } catch (err) {
+          // eslint-disable-next-line no-console
+          console.error('Error fetching profile after login', err)
+        }
       }
+      return res
+    } catch (err) {
+      // normalize network errors
+      // eslint-disable-next-line no-console
+      console.error('Login error', err)
+      throw err
     }
-    return res
   }
 
   const signup = async (email: string, password?: string) => {
     if (!password) throw new Error('Password is required for signup.')
-    const res = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        data: {
-          display_name: email.split('@')[0],
-        },
-      },
-    })
-    if (res.error) throw res.error
-    const user = (res as any)?.data?.user
-    if (user) {
-      try {
-        // create an initial profile row
-        await updateProfile(user.id, {
-          display_name: user.user_metadata?.display_name || '',
-        })
-        await fetchUserProfile(user)
-      } catch (err) {
-        // eslint-disable-next-line no-console
-        console.error('Error during signup profile creation', err)
+    if (!navigator.onLine) throw new Error('Sem conexão de rede')
+    try {
+      const res = await withTimeout(
+        supabase.auth.signUp({
+          email,
+          password,
+          options: {
+            data: {
+              display_name: email.split('@')[0],
+            },
+          },
+        }),
+      )
+      if ((res as any).error) throw (res as any).error
+      const user = (res as any)?.data?.user
+      if (user) {
+        try {
+          // create an initial profile row
+          await updateProfile(user.id, {
+            display_name: user.user_metadata?.display_name || '',
+          })
+          await fetchUserProfile(user)
+        } catch (err) {
+          // eslint-disable-next-line no-console
+          console.error('Error during signup profile creation', err)
+        }
       }
+      return res
+    } catch (err) {
+      // eslint-disable-next-line no-console
+      console.error('Signup error', err)
+      throw err
     }
-    return res
   }
 
   const logout = () => supabase.auth.signOut()
