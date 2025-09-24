@@ -97,15 +97,26 @@ export const useAuth = () => {
 
       // Initial check
       try {
-        const res = await supabase.auth.getSession()
-        // eslint-disable-next-line no-console
-        console.debug('getSession initial check', res)
-        const session = (res as any)?.data?.session
-        if (session?.user) {
-          await fetchUserProfile(session.user)
-        } else {
+        if (!navigator.onLine) {
           // eslint-disable-next-line no-console
-          console.debug('No session on initial check', session)
+          console.debug('Offline - skipping initial session check')
+        } else {
+          const res = await supabase.auth.getSession()
+          // eslint-disable-next-line no-console
+          console.debug('getSession initial check', res)
+          const session = (res as any)?.data?.session
+          if (session?.user) {
+            try {
+              await fetchUserProfile(session.user)
+            } catch (err) {
+              // eslint-disable-next-line no-console
+              console.warn('Initial profile fetch failed, using auth user fallback', err)
+              setUser({ ...session.user } as User)
+            }
+          } else {
+            // eslint-disable-next-line no-console
+            console.debug('No session on initial check', session)
+          }
         }
       } catch (err) {
         // eslint-disable-next-line no-console
