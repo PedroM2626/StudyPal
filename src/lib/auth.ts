@@ -221,10 +221,6 @@ export const useAuth = () => {
       // Atualiza o estado imediatamente com os novos dados
       const updatedUser = { ...user, ...updatedProfileData }
       setUser(updatedUser)
-      // Força uma atualização adicional para garantir que o estado seja refletido
-      setTimeout(() => {
-        setUser({ ...updatedUser })
-      }, 0)
     }
   }
 
