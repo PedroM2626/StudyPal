@@ -49,14 +49,16 @@ export const useAuth = () => {
       }
 
       try {
-        const onAuth = supabase.auth.onAuthStateChange((event: string, session: any) => {
-          // React to auth events
-          if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
-            if (session?.user) fetchUserProfile(session.user)
-          } else if (event === 'SIGNED_OUT' || event === 'USER_DELETED') {
-            setUser(null)
-          }
-        })
+        const onAuth = supabase.auth.onAuthStateChange(
+          (event: string, session: any) => {
+            // React to auth events
+            if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
+              if (session?.user) fetchUserProfile(session.user)
+            } else if (event === 'SIGNED_OUT' || event === 'USER_DELETED') {
+              setUser(null)
+            }
+          },
+        )
         subscription = (onAuth as any).data?.subscription || (onAuth as any)
       } catch (err) {
         // eslint-disable-next-line no-console
@@ -78,39 +80,47 @@ export const useAuth = () => {
   }, [fetchUserProfile])
 
   // Simple wrappers around supabase auth
-  const login = useCallback(async (email: string, password?: string) => {
-    if (!password) throw new Error('Password is required for login.')
-    if (!navigator.onLine) throw new Error('Sem conexão de rede')
-    const res = await supabase.auth.signInWithPassword({ email, password })
-    if ((res as any).error) throw (res as any).error
-    const session = (res as any)?.data?.session
-    if (session?.user) {
-      await fetchUserProfile(session.user)
-    }
-    return res
-  }, [fetchUserProfile])
-
-  const signup = useCallback(async (email: string, password?: string) => {
-    if (!password) throw new Error('Password is required for signup.')
-    if (!navigator.onLine) throw new Error('Sem conexão de rede')
-    const res = await supabase.auth.signUp({
-      email,
-      password,
-      options: { data: { display_name: email.split('@')[0] } },
-    })
-    if ((res as any).error) throw (res as any).error
-    const user = (res as any)?.data?.user
-    if (user) {
-      try {
-        await updateProfile(user.id, { display_name: user.user_metadata?.display_name || '' })
-        await fetchUserProfile(user as AuthUser)
-      } catch (err) {
-        // eslint-disable-next-line no-console
-        console.error('Error creating profile after signup', err)
+  const login = useCallback(
+    async (email: string, password?: string) => {
+      if (!password) throw new Error('Password is required for login.')
+      if (!navigator.onLine) throw new Error('Sem conexão de rede')
+      const res = await supabase.auth.signInWithPassword({ email, password })
+      if ((res as any).error) throw (res as any).error
+      const session = (res as any)?.data?.session
+      if (session?.user) {
+        await fetchUserProfile(session.user)
       }
-    }
-    return res
-  }, [fetchUserProfile])
+      return res
+    },
+    [fetchUserProfile],
+  )
+
+  const signup = useCallback(
+    async (email: string, password?: string) => {
+      if (!password) throw new Error('Password is required for signup.')
+      if (!navigator.onLine) throw new Error('Sem conexão de rede')
+      const res = await supabase.auth.signUp({
+        email,
+        password,
+        options: { data: { display_name: email.split('@')[0] } },
+      })
+      if ((res as any).error) throw (res as any).error
+      const user = (res as any)?.data?.user
+      if (user) {
+        try {
+          await updateProfile(user.id, {
+            display_name: user.user_metadata?.display_name || '',
+          })
+          await fetchUserProfile(user as AuthUser)
+        } catch (err) {
+          // eslint-disable-next-line no-console
+          console.error('Error creating profile after signup', err)
+        }
+      }
+      return res
+    },
+    [fetchUserProfile],
+  )
 
   const logout = useCallback(async () => {
     try {
@@ -122,13 +132,16 @@ export const useAuth = () => {
     }
   }, [])
 
-  const updateUserProfile = useCallback(async (updates: Partial<Profile>) => {
-    if (!user) throw new Error('User not authenticated')
-    const updatedProfileData = await updateProfile(user.id, updates)
-    if (updatedProfileData) {
-      setUser((prev) => (prev ? { ...prev, ...updatedProfileData } : prev))
-    }
-  }, [user])
+  const updateUserProfile = useCallback(
+    async (updates: Partial<Profile>) => {
+      if (!user) throw new Error('User not authenticated')
+      const updatedProfileData = await updateProfile(user.id, updates)
+      if (updatedProfileData) {
+        setUser((prev) => (prev ? { ...prev, ...updatedProfileData } : prev))
+      }
+    },
+    [user],
+  )
 
   return { user, loading, login, signup, logout, updateUserProfile }
 }
