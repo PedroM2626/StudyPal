@@ -191,24 +191,59 @@ export const useAuth = () => {
     }
   }, [fetchUserProfile])
 
-  // Helper to add a timeout to network calls
-  const withTimeout = async <T,>(p: Promise<T>, ms = 10000): Promise<T> => {
+  // Helper to add a timeout to a promise
+  const withTimeout = async <T,>(p: Promise<T>, ms = 15000): Promise<T> => {
     let timeoutId: number | undefined
     const timeout = new Promise<never>((_, reject) => {
       timeoutId = window.setTimeout(() => reject(new Error('Request timed out')), ms)
     })
     try {
-      return await Promise.race([p, timeout]) as T
+      return (await Promise.race([p, timeout])) as T
     } finally {
       if (timeoutId) window.clearTimeout(timeoutId)
     }
+  }
+
+  // Retry helper for network operations that may transiently fail
+  const requestWithRetries = async <T,>(
+    factory: () => Promise<T>,
+    retries = 2,
+    timeoutMs = 15000,
+  ): Promise<T> => {
+    let attempt = 0
+    let lastError: any
+    while (attempt <= retries) {
+      try {
+        return await withTimeout(factory(), timeoutMs)
+      } catch (err: any) {
+        lastError = err
+        // If offline or user aborted, don't retry
+        if (!navigator.onLine) break
+        const isNetworkError =
+          err?.message?.toLowerCase().includes('timed out') ||
+          err?.message?.toLowerCase().includes('failed to fetch') ||
+          err instanceof TypeError
+        if (!isNetworkError) break
+        attempt++
+        const backoff = Math.min(1000 * 2 ** attempt, 5000)
+        // eslint-disable-next-line no-console
+        console.warn(`Network attempt ${attempt} failed, retrying in ${backoff}ms`, err)
+        await new Promise((r) => setTimeout(r, backoff))
+      }
+    }
+    // final failure
+    // eslint-disable-next-line no-console
+    console.error('All network attempts failed', lastError)
+    throw new Error(
+      lastError?.message || 'Network request failed. Please check your connection and try again.',
+    )
   }
 
   const login = async (email: string, password?: string) => {
     if (!password) throw new Error('Password is required for login.')
     if (!navigator.onLine) throw new Error('Sem conexão de rede')
     try {
-      const res = await withTimeout(
+      const res = await requestWithRetries(() =>
         supabase.auth.signInWithPassword({ email, password }),
       )
       if ((res as any).error) throw (res as any).error
@@ -222,10 +257,13 @@ export const useAuth = () => {
         }
       }
       return res
-    } catch (err) {
-      // normalize network errors
+    } catch (err: any) {
       // eslint-disable-next-line no-console
       console.error('Login error', err)
+      // provide friendlier messages for timeouts
+      if (err.message?.toLowerCase().includes('timed out')) {
+        throw new Error('A solicitação expirou. Verifique sua conexão e tente novamente.')
+      }
       throw err
     }
   }
@@ -234,7 +272,7 @@ export const useAuth = () => {
     if (!password) throw new Error('Password is required for signup.')
     if (!navigator.onLine) throw new Error('Sem conexão de rede')
     try {
-      const res = await withTimeout(
+      const res = await requestWithRetries(() =>
         supabase.auth.signUp({
           email,
           password,
@@ -260,9 +298,12 @@ export const useAuth = () => {
         }
       }
       return res
-    } catch (err) {
+    } catch (err: any) {
       // eslint-disable-next-line no-console
       console.error('Signup error', err)
+      if (err.message?.toLowerCase().includes('timed out')) {
+        throw new Error('A solicitação expirou. Verifique sua conexão e tente novamente.')
+      }
       throw err
     }
   }
