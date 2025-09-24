@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import React from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -40,7 +40,7 @@ type LoginFormValues = z.infer<typeof loginSchema>
 type SignupFormValues = z.infer<typeof signupSchema>
 
 export default function AuthPage() {
-  const [loading, setLoading] = useState(false)
+  const [loading, setLoading] = React.useState(false)
   const navigate = useNavigate()
   const { login, signup } = useAuthContext()
 
