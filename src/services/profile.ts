@@ -4,28 +4,38 @@ import { Tables } from '@/lib/supabase/types'
 export type Profile = Tables<'profiles'>
 
 export const getProfile = async (userId: string): Promise<Profile | null> => {
-  const { data, error } = await supabase
-    .from('profiles')
-    .select('*')
-    .eq('id', userId)
-    .single()
-
-  if (error) {
-    // Better logging for objects returned by Supabase
-    try {
-      const serialized = JSON.stringify(
-        error,
-        Object.getOwnPropertyNames(error),
-      )
-      // eslint-disable-next-line no-console
-      console.error('Error fetching profile:', serialized)
-    } catch (err) {
-      // eslint-disable-next-line no-console
-      console.error('Error fetching profile:', error)
-    }
+  if (!navigator.onLine) {
+    // Don't attempt network requests while offline
+    // eslint-disable-next-line no-console
+    console.debug('getProfile skipped while offline')
     return null
   }
-  return data
+  try {
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('id', userId)
+      .single()
+
+    if (error) {
+      // Better logging for objects returned by Supabase
+      try {
+        const serialized = JSON.stringify(error, Object.getOwnPropertyNames(error))
+        // eslint-disable-next-line no-console
+        console.error('Error fetching profile:', serialized)
+      } catch (err) {
+        // eslint-disable-next-line no-console
+        console.error('Error fetching profile:', error)
+      }
+      return null
+    }
+    return data
+  } catch (err) {
+    // Network-level error (e.g. failed to fetch)
+    // eslint-disable-next-line no-console
+    console.warn('Network error when fetching profile, returning null', err)
+    return null
+  }
 }
 
 export const updateProfile = async (
