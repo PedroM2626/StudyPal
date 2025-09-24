@@ -7,7 +7,7 @@ export type User = AuthUser & Profile
 
 export const useAuth = () => {
   const [user, setUser] = useState<User | null>(null)
-  const [loading, setLoading] = useState(true)
+  const [loading, setLoading] = useState(false)
   const loadingTimerRef = useRef<number | null>(null)
 
   const setLoadingWithWatchdog = (value: boolean) => {
