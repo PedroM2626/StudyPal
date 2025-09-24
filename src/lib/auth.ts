@@ -44,7 +44,6 @@ export const useAuth = () => {
               // debug: log auth event and session
               // eslint-disable-next-line no-console
               console.debug('onAuth event', event, session)
-              setLoadingWithWatchdog(true)
               if (session?.user) {
                 await fetchUserProfile(session.user)
               } else {
@@ -64,7 +63,7 @@ export const useAuth = () => {
               // eslint-disable-next-line no-console
               console.error('onAuthStateChange handler error', err)
             } finally {
-              setLoadingWithWatchdog(false)
+              // no-op: loading removed
             }
           },
         )
@@ -87,7 +86,6 @@ export const useAuth = () => {
 
       // Initial check
       try {
-        setLoadingWithWatchdog(true)
         const res = await supabase.auth.getSession()
         // eslint-disable-next-line no-console
         console.debug('getSession initial check', res)
@@ -102,7 +100,7 @@ export const useAuth = () => {
         // eslint-disable-next-line no-console
         console.error('checkSession error', err)
       } finally {
-        setLoadingWithWatchdog(false)
+        // no-op: loading removed
       }
     }
 
@@ -113,8 +111,7 @@ export const useAuth = () => {
         // eslint-disable-next-line no-console
         console.error('Error during auth setup', err)
       } finally {
-        // ensure loading is not stuck
-        setLoadingWithWatchdog(false)
+        // no-op: loading removed
       }
     })()
 
@@ -141,8 +138,7 @@ export const useAuth = () => {
         // eslint-disable-next-line no-console
         console.error('visibility/focus check error', err)
       } finally {
-        // ensure loading isn't left true
-        setLoadingWithWatchdog(false)
+        // no-op: loading removed
       }
     }
 
