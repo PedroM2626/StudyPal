@@ -75,7 +75,7 @@ export const useAuth = () => {
               // eslint-disable-next-line no-console
               console.error('onAuthStateChange handler error', err)
             } finally {
-              // no-op: loading removed
+              // don't toggle loading here; keep initial loading only for startup
             }
           },
         )
@@ -123,7 +123,8 @@ export const useAuth = () => {
         // eslint-disable-next-line no-console
         console.error('checkSession error', err)
       } finally {
-        // no-op: loading removed
+        // Mark the initial auth check as complete
+        setLoading(false)
       }
     }
 
@@ -134,7 +135,8 @@ export const useAuth = () => {
         // eslint-disable-next-line no-console
         console.error('Error during auth setup', err)
       } finally {
-        // no-op: loading removed
+        // ensure loading flag is cleared if setup errors
+        setLoading(false)
       }
     })()
 
@@ -173,7 +175,7 @@ export const useAuth = () => {
         // eslint-disable-next-line no-console
         console.error('visibility/focus check error', err)
       } finally {
-        // no-op: loading removed
+        // no-op
       }
     }
 
