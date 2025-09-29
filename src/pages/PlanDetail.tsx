@@ -197,15 +197,15 @@ export default function PlanDetailPage() {
                     <Dialog key={session.id}>
                       <DialogTrigger asChild>
                         <div
-                          className="absolute w-[95%] left-1/2 -translate-x-1/2 p-2 rounded-md text-white cursor-pointer"
+                          className="absolute w-[95%] left-1/2 -translate-x-1/2 p-2 rounded-md cursor-pointer text-foreground"
                           style={{
-                            backgroundColor: session.subject_color,
+                            backgroundColor: session.subject_color || (session.subjects && session.subjects.color) || '#666',
                             top: `${(new Date(session.start_time).getHours() - 7) * 4}rem`,
                             height: `${(new Date(session.end_time).getTime() - new Date(session.start_time).getTime()) / (1000 * 60 * 15)}rem`,
                           }}
                         >
                           <p className="font-bold text-xs">
-                            {session.subject_name}
+                            {session.subject_name || (session.subjects && session.subjects.name) || 'Matéria'}
                           </p>
                           <p className="text-xs opacity-80">
                             {new Date(session.start_time).toLocaleTimeString(
