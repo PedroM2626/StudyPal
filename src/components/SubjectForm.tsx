@@ -13,7 +13,7 @@ import {
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Slider } from '@/components/ui/slider'
-import { addSubject, Subject } from '@/services/subjects'
+import { addSubject, updateSubject, Subject } from '@/services/subjects'
 import { getCategories, Category } from '@/services/categories'
 import { toast } from '@/components/ui/use-toast'
 import { MultiSelect, Option } from './ui/multi-select'
