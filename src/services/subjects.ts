@@ -108,6 +108,45 @@ export const addSubject = async (
   return { ...subject, category_ids }
 }
 
+export const updateSubject = async (
+  subjectId: number,
+  updates: Partial<Omit<Subject, 'id' | 'user_id' | 'created_at'>>,
+): Promise<Subject> => {
+  const { category_ids, ...rest } = updates as any
+  const { data: updatedSubject, error } = await supabase
+    .from('subjects')
+    .update(rest)
+    .eq('id', subjectId)
+    .select()
+    .single()
+
+  if (error) {
+    console.error('Error updating subject:', error)
+    throw error
+  }
+
+  // Update categories relations if provided
+  if (category_ids) {
+    // delete existing relations
+    await supabase.from('subject_categories').delete().eq('subject_id', subjectId)
+    if (category_ids.length > 0) {
+      const relations = category_ids.map((catId: number) => ({
+        subject_id: subjectId,
+        category_id: catId,
+      }))
+      const { error: relErr } = await supabase
+        .from('subject_categories')
+        .insert(relations)
+      if (relErr) {
+        console.error('Error updating subject categories:', relErr)
+        throw relErr
+      }
+    }
+  }
+
+  return { ...updatedSubject, category_ids }
+}
+
 export const deleteSubject = async (subjectId: number): Promise<void> => {
   // Must delete from join table first due to foreign key constraints
   await supabase.from('subject_categories').delete().eq('subject_id', subjectId)
