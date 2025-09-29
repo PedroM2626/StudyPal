@@ -73,6 +73,22 @@ export default function Dashboard() {
         ((s.goal_hours - (s.remaining_hours || 0)) / s.goal_hours) * 100,
     }))
 
+  const [nextSession, setNextSession] = useState<any>(null)
+
+  useEffect(() => {
+    const fetchNext = async () => {
+      if (!user) return
+      try {
+        const { getNextSession } = await import('@/services/sessions')
+        const ns = await getNextSession(user.id)
+        setNextSession(ns)
+      } catch (e) {
+        // ignore
+      }
+    }
+    fetchNext()
+  }, [user, subjects])
+
   const summaryCards = [
     {
       title: 'Horas Planejadas',
@@ -91,8 +107,13 @@ export default function Dashboard() {
     },
     {
       title: 'Próxima Sessão',
-      value: 'Cálculo I',
-      description: 'Hoje, 08:00',
+      value: nextSession ? nextSession.subjects?.name || nextSession.subject_name || '—' : '—',
+      description: nextSession
+        ? new Date(nextSession.start_time).toLocaleString('pt-BR', {
+            hour: '2-digit',
+            minute: '2-digit',
+          })
+        : 'Sem sessões agendadas',
     },
   ]
 
