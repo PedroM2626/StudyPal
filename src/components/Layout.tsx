@@ -33,7 +33,7 @@ const AppLayout = () => {
           <AppSidebar />
           <div className="flex flex-col">
             <Header />
-            <main className="flex flex-1 flex-col bg-background">
+            <main className="flex flex-1 flex-col bg-background overflow-auto">
               <Outlet />
             </main>
             <Footer />

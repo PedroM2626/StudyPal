@@ -39,10 +39,36 @@ export const getSubjects = async (userId: string): Promise<Subject[]> => {
     category_ids: s.subject_categories.map((sc) => sc.category_id),
   }))
 
-  // This is a placeholder for a more complex calculation
+  // Fetch completed sessions once and aggregate duration per subject
+  const { data: doneSessions, error: sessionsError } = await supabase
+    .from('study_sessions')
+    .select('subject_id, start_time, end_time')
+    .eq('user_id', userId)
+    .eq('status', 'done')
+
+  if (sessionsError) {
+    console.error(
+      'Error fetching completed sessions for remaining hours:',
+      sessionsError,
+    )
+    throw sessionsError
+  }
+
+  const completedHoursBySubject: Record<number, number> = {}
+  doneSessions.forEach((s: any) => {
+    const durationHours =
+      (new Date(s.end_time).getTime() - new Date(s.start_time).getTime()) /
+      (1000 * 60 * 60)
+    completedHoursBySubject[s.subject_id] =
+      (completedHoursBySubject[s.subject_id] || 0) + durationHours
+  })
+
   const subjectsWithRemaining = subjects.map((s) => ({
     ...s,
-    remaining_hours: s.goal_hours * (1 - Math.random()),
+    remaining_hours: Math.max(
+      0,
+      s.goal_hours - (completedHoursBySubject[s.id] || 0),
+    ),
   }))
 
   return subjectsWithRemaining
@@ -86,6 +112,48 @@ export const addSubject = async (
   }
 
   return { ...subject, category_ids }
+}
+
+export const updateSubject = async (
+  subjectId: number,
+  updates: Partial<Omit<Subject, 'id' | 'user_id' | 'created_at'>>,
+): Promise<Subject> => {
+  const { category_ids, ...rest } = updates as any
+  const { data: updatedSubject, error } = await supabase
+    .from('subjects')
+    .update(rest)
+    .eq('id', subjectId)
+    .select()
+    .single()
+
+  if (error) {
+    console.error('Error updating subject:', error)
+    throw error
+  }
+
+  // Update categories relations if provided
+  if (category_ids) {
+    // delete existing relations
+    await supabase
+      .from('subject_categories')
+      .delete()
+      .eq('subject_id', subjectId)
+    if (category_ids.length > 0) {
+      const relations = category_ids.map((catId: number) => ({
+        subject_id: subjectId,
+        category_id: catId,
+      }))
+      const { error: relErr } = await supabase
+        .from('subject_categories')
+        .insert(relations)
+      if (relErr) {
+        console.error('Error updating subject categories:', relErr)
+        throw relErr
+      }
+    }
+  }
+
+  return { ...updatedSubject, category_ids }
 }
 
 export const deleteSubject = async (subjectId: number): Promise<void> => {
