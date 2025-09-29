@@ -32,8 +32,11 @@ export const getPlanByToken = async (token: string) => {
       `
       plan_id,
       owner_id,
-      study_plans (*, profiles(display_name)),
-      study_sessions (*, subjects(name, color))
+      study_plans (
+        *,
+        profiles(display_name),
+        study_sessions (*, subjects(name, color))
+      )
     `,
     )
     .eq('share_token', token)
