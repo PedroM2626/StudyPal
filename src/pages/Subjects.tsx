@@ -226,9 +226,18 @@ export default function SubjectsPage() {
                   )}
                 </CardContent>
                 <CardFooter className="flex justify-end gap-2">
-                  <Button variant="outline" size="icon" disabled>
-                    <Edit className="h-4 w-4" />
-                  </Button>
+                  <SubjectForm
+                    subject={subject}
+                    onSuccess={(updated) => {
+                      setSubjects((prev) =>
+                        prev.map((s) => (s.id === updated.id ? updated : s)),
+                      )
+                    }}
+                  >
+                    <Button variant="outline" size="icon">
+                      <Edit className="h-4 w-4" />
+                    </Button>
+                  </SubjectForm>
                   <AlertDialog>
                     <AlertDialogTrigger asChild>
                       <Button variant="destructive" size="icon">
