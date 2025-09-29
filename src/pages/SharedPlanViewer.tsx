@@ -78,7 +78,7 @@ export default function SharedPlanViewer() {
         <div className="border rounded-lg p-4">
           <h2 className="text-xl font-semibold mb-4">Sessões de Estudo</h2>
           <div className="space-y-3">
-            {planData.study_sessions
+            {planData.study_plans.study_sessions
               .sort(
                 (a: any, b: any) =>
                   new Date(a.start_time).getTime() -
