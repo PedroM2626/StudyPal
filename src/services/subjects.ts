@@ -47,7 +47,10 @@ export const getSubjects = async (userId: string): Promise<Subject[]> => {
     .eq('status', 'done')
 
   if (sessionsError) {
-    console.error('Error fetching completed sessions for remaining hours:', sessionsError)
+    console.error(
+      'Error fetching completed sessions for remaining hours:',
+      sessionsError,
+    )
     throw sessionsError
   }
 
@@ -62,7 +65,10 @@ export const getSubjects = async (userId: string): Promise<Subject[]> => {
 
   const subjectsWithRemaining = subjects.map((s) => ({
     ...s,
-    remaining_hours: Math.max(0, s.goal_hours - (completedHoursBySubject[s.id] || 0)),
+    remaining_hours: Math.max(
+      0,
+      s.goal_hours - (completedHoursBySubject[s.id] || 0),
+    ),
   }))
 
   return subjectsWithRemaining
@@ -128,7 +134,10 @@ export const updateSubject = async (
   // Update categories relations if provided
   if (category_ids) {
     // delete existing relations
-    await supabase.from('subject_categories').delete().eq('subject_id', subjectId)
+    await supabase
+      .from('subject_categories')
+      .delete()
+      .eq('subject_id', subjectId)
     if (category_ids.length > 0) {
       const relations = category_ids.map((catId: number) => ({
         subject_id: subjectId,

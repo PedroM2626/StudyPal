@@ -107,7 +107,9 @@ export default function Dashboard() {
     },
     {
       title: 'Próxima Sessão',
-      value: nextSession ? nextSession.subjects?.name || nextSession.subject_name || '—' : '—',
+      value: nextSession
+        ? nextSession.subjects?.name || nextSession.subject_name || '—'
+        : '—',
       description: nextSession
         ? new Date(nextSession.start_time).toLocaleString('pt-BR', {
             hour: '2-digit',
