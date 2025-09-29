@@ -51,3 +51,21 @@ export const updateSessionStatus = async (
   }
   return data
 }
+
+export const getNextSession = async (userId: string) => {
+  const { data, error } = await supabase
+    .from('study_sessions')
+    .select('*, subjects(name)')
+    .eq('user_id', userId)
+    .eq('status', 'planned')
+    .gte('start_time', new Date().toISOString())
+    .order('start_time', { ascending: true })
+    .limit(1)
+
+  if (error) {
+    console.error('Error fetching next session:', error)
+    throw error
+  }
+
+  return data && data.length > 0 ? data[0] : null
+}
