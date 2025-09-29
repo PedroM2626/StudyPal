@@ -159,7 +159,7 @@ export default function PlanDetailPage() {
           {weekDays[6].toLocaleDateString('pt-BR')}
         </span>
       </div>
-      <div className="grid grid-cols-[auto_1fr] border rounded-lg overflow-hidden">
+      <div className="grid grid-cols-[auto_1fr] border rounded-lg">
         <div className="flex flex-col border-r">
           <div className="h-12"></div>
           {timeSlots.map((time) => (
