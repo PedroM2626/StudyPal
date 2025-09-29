@@ -55,15 +55,27 @@ export const SubjectForm = ({
     if (!user) return
     setLoading(true)
     try {
-      const newSubject = await addSubject(user.id, {
-        name,
-        goal_hours,
-        difficulty,
-        deadline: null,
-        category_ids: selectedCategories.map(Number),
-      })
-      toast({ title: 'Matéria salva com sucesso!' })
-      onSuccess(newSubject)
+      if (subject) {
+        const updated = await updateSubject(subject.id, {
+          name,
+          goal_hours,
+          difficulty,
+          deadline: null,
+          category_ids: selectedCategories.map(Number),
+        } as any)
+        toast({ title: 'Matéria atualizada com sucesso!' })
+        onSuccess(updated)
+      } else {
+        const newSubject = await addSubject(user.id, {
+          name,
+          goal_hours,
+          difficulty,
+          deadline: null,
+          category_ids: selectedCategories.map(Number),
+        })
+        toast({ title: 'Matéria salva com sucesso!' })
+        onSuccess(newSubject)
+      }
       setOpen(false)
     } catch (error) {
       toast({ variant: 'destructive', title: 'Erro ao salvar matéria.' })
