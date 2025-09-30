@@ -63,7 +63,9 @@ export default function PlanDetailPage() {
   const [loading, setLoading] = useState(true)
   const [currentWeek, setCurrentWeek] = useState(new Date())
   const [subjects, setSubjects] = useState<{ id: number; name: string }[]>([])
-  const [editingSession, setEditingSession] = useState<StudySession | null>(null)
+  const [editingSession, setEditingSession] = useState<StudySession | null>(
+    null,
+  )
   const [isEditOpen, setIsEditOpen] = useState(false)
   const [isCreateOpen, setIsCreateOpen] = useState(false)
   const [createDate, setCreateDate] = useState<Date | null>(null)
@@ -85,7 +87,8 @@ export default function PlanDetailPage() {
           getSubjects(user.id),
         ])
         setPlanTitle(planData?.title || 'Plano de Estudo')
-        if (planData?.session_duration) setSessionDuration(planData.session_duration)
+        if (planData?.session_duration)
+          setSessionDuration(planData.session_duration)
         setSessions(sessionsData)
         setSubjects(subs.map((s: any) => ({ id: s.id, name: s.name })))
       } catch (error) {
@@ -125,7 +128,11 @@ export default function PlanDetailPage() {
     )
   }
 
-  const openCreateAtPosition = (day: Date, y: number, container: HTMLDivElement) => {
+  const openCreateAtPosition = (
+    day: Date,
+    y: number,
+    container: HTMLDivElement,
+  ) => {
     const rect = container.getBoundingClientRect()
     const ratio = Math.min(Math.max((y - rect.top) / rect.height, 0), 1)
     const totalMinutes = 16 * 60
@@ -137,8 +144,12 @@ export default function PlanDetailPage() {
     const end = new Date(start.getTime() + sessionDuration * 60000)
 
     setCreateDate(day)
-    setCreateStart(`${start.getHours().toString().padStart(2, '0')}:${start.getMinutes().toString().padStart(2, '0')}`)
-    setCreateEnd(`${end.getHours().toString().padStart(2, '0')}:${end.getMinutes().toString().padStart(2, '0')}`)
+    setCreateStart(
+      `${start.getHours().toString().padStart(2, '0')}:${start.getMinutes().toString().padStart(2, '0')}`,
+    )
+    setCreateEnd(
+      `${end.getHours().toString().padStart(2, '0')}:${end.getMinutes().toString().padStart(2, '0')}`,
+    )
     setCreateSubjectId(subjects[0]?.id ? String(subjects[0].id) : '')
     setCreateNotes('')
     setIsCreateOpen(true)
@@ -311,7 +322,14 @@ export default function PlanDetailPage() {
                     return isWithinInterval(st, { start: sd, end: ed })
                   })
                   .map((session) => (
-                    <Dialog key={session.id} open={isEditOpen && editingSession?.id === session.id} onOpenChange={(o) => { setIsEditOpen(o); if (o) setEditingSession(session) }}>
+                    <Dialog
+                      key={session.id}
+                      open={isEditOpen && editingSession?.id === session.id}
+                      onOpenChange={(o) => {
+                        setIsEditOpen(o)
+                        if (o) setEditingSession(session)
+                      }}
+                    >
                       <DialogTrigger asChild>
                         <div
                           className="absolute w-[95%] left-1/2 -translate-x-1/2 p-2 rounded-md cursor-pointer text-foreground"
@@ -366,7 +384,10 @@ export default function PlanDetailPage() {
                               <Select
                                 defaultValue={String(session.subject_id)}
                                 onValueChange={(v) =>
-                                  setEditingSession({ ...session, subject_id: Number(v) } as any)
+                                  setEditingSession({
+                                    ...session,
+                                    subject_id: Number(v),
+                                  } as any)
                                 }
                               >
                                 <SelectTrigger className="mt-1">
@@ -387,7 +408,10 @@ export default function PlanDetailPage() {
                                 defaultValue={(session as any).notes || ''}
                                 className="mt-1"
                                 onChange={(e) =>
-                                  setEditingSession({ ...session, notes: e.target.value } as any)
+                                  setEditingSession({
+                                    ...session,
+                                    notes: e.target.value,
+                                  } as any)
                                 }
                               />
                             </div>
@@ -398,17 +422,23 @@ export default function PlanDetailPage() {
                               <Input
                                 type="time"
                                 className="mt-1"
-                                defaultValue={new Date(session.start_time)
-                                  .toLocaleTimeString('pt-BR', {
-                                    hour: '2-digit',
-                                    minute: '2-digit',
-                                    hour12: false,
-                                  })}
+                                defaultValue={new Date(
+                                  session.start_time,
+                                ).toLocaleTimeString('pt-BR', {
+                                  hour: '2-digit',
+                                  minute: '2-digit',
+                                  hour12: false,
+                                })}
                                 onChange={(e) => {
-                                  const [hh, mm] = e.target.value.split(':').map(Number)
+                                  const [hh, mm] = e.target.value
+                                    .split(':')
+                                    .map(Number)
                                   const d = new Date(session.start_time)
                                   d.setHours(hh, mm, 0, 0)
-                                  setEditingSession({ ...session, start_time: d.toISOString() } as any)
+                                  setEditingSession({
+                                    ...session,
+                                    start_time: d.toISOString(),
+                                  } as any)
                                 }}
                               />
                             </div>
@@ -417,29 +447,50 @@ export default function PlanDetailPage() {
                               <Input
                                 type="time"
                                 className="mt-1"
-                                defaultValue={new Date(session.end_time)
-                                  .toLocaleTimeString('pt-BR', {
-                                    hour: '2-digit',
-                                    minute: '2-digit',
-                                    hour12: false,
-                                  })}
+                                defaultValue={new Date(
+                                  session.end_time,
+                                ).toLocaleTimeString('pt-BR', {
+                                  hour: '2-digit',
+                                  minute: '2-digit',
+                                  hour12: false,
+                                })}
                                 onChange={(e) => {
-                                  const [hh, mm] = e.target.value.split(':').map(Number)
+                                  const [hh, mm] = e.target.value
+                                    .split(':')
+                                    .map(Number)
                                   const d = new Date(session.end_time)
                                   d.setHours(hh, mm, 0, 0)
-                                  setEditingSession({ ...session, end_time: d.toISOString() } as any)
+                                  setEditingSession({
+                                    ...session,
+                                    end_time: d.toISOString(),
+                                  } as any)
                                 }}
                               />
                             </div>
                           </div>
                           <div className="flex flex-wrap gap-2 pt-2">
-                            <Button onClick={() => handleStatusUpdate(session.id, 'done')}>
-                              <CheckCircle2 className="mr-2 h-4 w-4" /> Concluída
+                            <Button
+                              onClick={() =>
+                                handleStatusUpdate(session.id, 'done')
+                              }
+                            >
+                              <CheckCircle2 className="mr-2 h-4 w-4" />{' '}
+                              Concluída
                             </Button>
-                            <Button variant="outline" onClick={() => handleStatusUpdate(session.id, 'skipped')}>
+                            <Button
+                              variant="outline"
+                              onClick={() =>
+                                handleStatusUpdate(session.id, 'skipped')
+                              }
+                            >
                               <CircleSlash2 className="mr-2 h-4 w-4" /> Pulada
                             </Button>
-                            <Button variant="secondary" onClick={() => handleStatusUpdate(session.id, 'planned')}>
+                            <Button
+                              variant="secondary"
+                              onClick={() =>
+                                handleStatusUpdate(session.id, 'planned')
+                              }
+                            >
                               Desmarcar
                             </Button>
                             <div className="ml-auto flex gap-2">
@@ -447,16 +498,28 @@ export default function PlanDetailPage() {
                                 variant="default"
                                 onClick={() =>
                                   handleUpdateSession({
-                                    subject_id: (editingSession as any)?.subject_id ?? session.subject_id,
-                                    start_time: (editingSession as any)?.start_time ?? session.start_time,
-                                    end_time: (editingSession as any)?.end_time ?? session.end_time,
-                                    notes: (editingSession as any)?.notes ?? (session as any).notes ?? null,
+                                    subject_id:
+                                      (editingSession as any)?.subject_id ??
+                                      session.subject_id,
+                                    start_time:
+                                      (editingSession as any)?.start_time ??
+                                      session.start_time,
+                                    end_time:
+                                      (editingSession as any)?.end_time ??
+                                      session.end_time,
+                                    notes:
+                                      (editingSession as any)?.notes ??
+                                      (session as any).notes ??
+                                      null,
                                   })
                                 }
                               >
                                 <Pencil className="mr-2 h-4 w-4" /> Salvar
                               </Button>
-                              <Button variant="destructive" onClick={handleDeleteSession}>
+                              <Button
+                                variant="destructive"
+                                onClick={handleDeleteSession}
+                              >
                                 <Trash2 className="mr-2 h-4 w-4" /> Excluir
                               </Button>
                             </div>
@@ -479,7 +542,10 @@ export default function PlanDetailPage() {
             <div className="space-y-3">
               <div>
                 <Label>Matéria</Label>
-                <Select value={createSubjectId} onValueChange={setCreateSubjectId}>
+                <Select
+                  value={createSubjectId}
+                  onValueChange={setCreateSubjectId}
+                >
                   <SelectTrigger className="mt-1">
                     <SelectValue placeholder="Selecione a matéria" />
                   </SelectTrigger>
@@ -495,16 +561,30 @@ export default function PlanDetailPage() {
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <Label>Início</Label>
-                  <Input type="time" className="mt-1" value={createStart} onChange={(e) => setCreateStart(e.target.value)} />
+                  <Input
+                    type="time"
+                    className="mt-1"
+                    value={createStart}
+                    onChange={(e) => setCreateStart(e.target.value)}
+                  />
                 </div>
                 <div>
                   <Label>Fim</Label>
-                  <Input type="time" className="mt-1" value={createEnd} onChange={(e) => setCreateEnd(e.target.value)} />
+                  <Input
+                    type="time"
+                    className="mt-1"
+                    value={createEnd}
+                    onChange={(e) => setCreateEnd(e.target.value)}
+                  />
                 </div>
               </div>
               <div>
                 <Label>Notas</Label>
-                <Textarea className="mt-1" value={createNotes} onChange={(e) => setCreateNotes(e.target.value)} />
+                <Textarea
+                  className="mt-1"
+                  value={createNotes}
+                  onChange={(e) => setCreateNotes(e.target.value)}
+                />
               </div>
               <div className="flex justify-end gap-2">
                 <Button onClick={handleCreateSession}>Criar</Button>
