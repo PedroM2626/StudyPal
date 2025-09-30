@@ -179,10 +179,8 @@ export default function PlanDetailPage() {
   }) => {
     if (!editingSession) return
     try {
-      const updated = await updateSession(editingSession.id, updates)
-      setSessions((prev) =>
-        prev.map((s) => (s.id === updated.id ? { ...s, ...updated } : s)),
-      )
+      await updateSession(editingSession.id, updates)
+      setSessions(await getSessionsForPlan(planId))
       setIsEditOpen(false)
       toast({ title: 'Sessão atualizada' })
     } catch (e) {
