@@ -154,7 +154,7 @@ export default function PlanDetailPage() {
     end.setHours(eh, em, 0, 0)
 
     try {
-      const created = await createSession({
+      await createSession({
         user_id: user.id,
         plan_id: planId,
         subject_id: Number(createSubjectId),
@@ -163,7 +163,6 @@ export default function PlanDetailPage() {
         status: 'planned',
         notes: createNotes || null,
       })
-      const [full] = await getSessionsForPlan(planId)
       setSessions(await getSessionsForPlan(planId))
       setIsCreateOpen(false)
       toast({ title: 'Sessão criada com sucesso' })
